@@ -5,7 +5,11 @@ const LANG_MAP = { en: 'en-US', ne: 'ne-NP', hi: 'hi-IN' }
 export function useVoice(language = 'ne') {
   const [transcript, setTranscript] = useState('')
   const [isListening, setIsListening] = useState(false)
-  const [supported, setSupported] = useState('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+  const [supported] = useState(() => {
+    return typeof window !== 'undefined' && 
+      ('SpeechRecognition' in window || 
+       'webkitSpeechRecognition' in window)
+  })
   const recRef = useRef(null)
 
   const start = useCallback(() => {
@@ -13,7 +17,7 @@ export function useVoice(language = 'ne') {
     if (!SR) return
 
     const rec = new SR()
-    rec.lang = LANG_MAP[language] || 'ne-NP'
+    rec.lang = LANG_MAP[language] || 'en-US'
     rec.continuous = true
     rec.interimResults = true
 
@@ -22,7 +26,13 @@ export function useVoice(language = 'ne') {
       setTranscript(text)
     }
 
-    rec.onerror = () => setIsListening(false)
+    rec.onerror = (e) => {
+      console.error("Speech recognition error:", e.error)
+      if (e.error === 'not-allowed') {
+        alert("Microphone access was denied. Please check your browser permissions.")
+      }
+      setIsListening(false)
+    }
     rec.onend = () => setIsListening(false)
     rec.start()
     recRef.current = rec
