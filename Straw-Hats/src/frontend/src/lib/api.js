@@ -9,7 +9,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
-  timeout: 30000, // 30s — Gemini can be slow on first call
+  timeout: 60000, // 60s — HF Vision + Gemini dual pipeline
 });
 
 /**
@@ -26,7 +26,7 @@ export async function submitDiagnosis({
 }) {
   const form = new FormData();
   form.append("image", image); // File object
-  form.append("animal_type", animalType); // 'cattle'|'goat'|'poultry'|'pig'|'dog'|'cat'|'hamster'
+  form.append("animal_type", animalType); // livestock type from AnimalSelector
   form.append("symptoms", symptoms); // string
   form.append("language", language || "en"); // 'en'|'ne'|'hi'
   if (lat != null) form.append("lat", String(lat));
@@ -34,6 +34,7 @@ export async function submitDiagnosis({
 
   const res = await api.post("/api/diagnose", form, {
     headers: { "Content-Type": "multipart/form-data" },
+    timeout: 60000,
   });
   return res.data; // DiagnosisResponse object
 }
