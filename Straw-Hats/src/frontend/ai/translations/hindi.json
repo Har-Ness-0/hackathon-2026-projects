@@ -1,0 +1,16 @@
+{
+  "app_tagline": "आपके पशु का डॉक्टर — आपकी जेब में",
+  "diagnose_now": "अभी निदान करें",
+  "select_animal": "अपने पशु का चयन करें",
+  "take_photo": "फोटो लें",
+  "speak_symptoms": "लक्षण बोलें",
+  "diagnosing": "निदान हो रहा है...",
+  "severity_high": "उच्च गंभीरता",
+  "do_now": "अभी यह करें",
+  "vet_required": "पशु चिकित्सक आवश्यक",
+  "zoonotic_risk": "मानव को जोखिम",
+  "cattle": "गाय/भैंस",
+  "goat": "बकरी/भेड़",
+  "poultry": "मुर्गी",
+  "pig": "सुअर"
+}

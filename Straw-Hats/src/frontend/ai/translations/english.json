@@ -1,0 +1,16 @@
+{
+  "app_tagline": "Your animal's doctor — in your pocket",
+  "diagnose_now": "Diagnose Now",
+  "select_animal": "Select your animal",
+  "take_photo": "Take Photo",
+  "speak_symptoms": "Speak your symptoms",
+  "diagnosing": "Diagnosing...",
+  "severity_high": "HIGH SEVERITY",
+  "do_now": "DO THIS RIGHT NOW",
+  "vet_required": "VET REQUIRED",
+  "zoonotic_risk": "RISK TO HUMANS",
+  "cattle": "Cattle/Buffalo",
+  "goat": "Goat/Sheep",
+  "poultry": "Poultry",
+  "pig": "Pig"
+}
