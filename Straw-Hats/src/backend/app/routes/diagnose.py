@@ -79,11 +79,10 @@ async def diagnose(
             processed_bytes,
             file_options={"content-type": "image/jpeg"},
         )
-        photo_url = db.storage.from_(
-            "animal-photos").get_public_url(photo_path)
+        photo_url = db.storage.from_("animal-photos").get_public_url(photo_path)
     except Exception as e:
-        print(f"Supabase storage upload failed: {e}")
-        print("Continuing diagnosis without storage upload.")
+        print(f"[Storage] Upload failed (non-fatal): {e}")
+        photo_url = ""
 
     # 2.5. Run HF Vision Classifier (parallel AI signal for Gemini)
     # This is non-blocking — if HF fails, the pipeline continues.
@@ -151,8 +150,8 @@ async def diagnose(
     try:
         db.table("diagnoses").insert(record).execute()
     except Exception as e:
-        print(f"Supabase insert failed: {e}")
-        print("Continuing diagnosis response without DB persistence.")
+        print(f"[DB] Insert failed (non-fatal): {e}")
+        # Continue — farmer still gets their diagnosis result
 
     # 6. Return response
     return DiagnosisResponse(**record)
