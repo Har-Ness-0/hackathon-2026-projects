@@ -88,8 +88,11 @@ export default function Diagnose({ lang = "ne" }) {
       const result = await submitDiagnosis(form);
       navigate(`/result/${result.id}`, { state: { diagnosis: result } });
     } catch (err) {
-      setError("Diagnosis failed. Please try again.");
-      setLoading(false);
+      const msg = err?.response?.data?.detail 
+        || err?.message 
+        || 'Diagnosis failed. Please try again.'
+      setError(msg)
+      setLoading(false)
     }
   }
 
