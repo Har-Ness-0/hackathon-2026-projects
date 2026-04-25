@@ -1,8 +1,15 @@
 import { useCamera } from '../hooks/useCamera'
 import { Camera, Image as ImageIcon, RefreshCw } from 'lucide-react'
+import { useEffect } from 'react'
 
 export default function CameraCapture({ onCapture }) {
   const { videoRef, canvasRef, capturedImage, preview, error, startCamera, capture, reset, stream } = useCamera()
+
+  useEffect(() => {
+    if (capturedImage && preview) {
+      onCapture(capturedImage, preview)
+    }
+  }, [capturedImage, preview])
 
   function handleFileUpload(e) {
     const file = e.target.files[0]
@@ -11,7 +18,6 @@ export default function CameraCapture({ onCapture }) {
   }
 
   if (capturedImage) {
-    onCapture(capturedImage, preview) // Bubble up to parent
     return (
       <div className="flex flex-col items-center gap-6 animate-in slide-in-from-right-4 duration-300">
         <h2 className="text-2xl font-bold text-slate-800">Photo Captured</h2>
