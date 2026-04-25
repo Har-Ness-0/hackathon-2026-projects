@@ -8,8 +8,10 @@ export default function VoiceInput({ language, value, onChange, onSubmit }) {
 
   // Sync voice transcript to local state
   useEffect(() => {
-    if (transcript) onChange(transcript)
-  }, [transcript, onChange])
+    if (transcript && transcript.trim()) {
+      onChange(transcript)
+    }
+  }, [transcript])
 
   const toggleRecording = () => {
     if (isListening) stop()
@@ -74,7 +76,7 @@ export default function VoiceInput({ language, value, onChange, onSubmit }) {
           </button>
         )}
         <button
-          onClick={onSubmit}
+          onClick={() => { stop(); onSubmit() }}
           disabled={!value.trim()}
           className="flex-1 flex items-center justify-center gap-2 bg-teal-600 text-white p-4 rounded-2xl font-bold text-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg"
         >
