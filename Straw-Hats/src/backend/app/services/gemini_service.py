@@ -148,6 +148,7 @@ async def get_diagnosis(image_bytes: bytes, animal_type: str,
                     temperature=0.2,        # Low temperature = consistent JSON
                     max_output_tokens=500,
                 ),
+                request_options={"timeout": 45},
             )
 
             raw = response.text.strip()
