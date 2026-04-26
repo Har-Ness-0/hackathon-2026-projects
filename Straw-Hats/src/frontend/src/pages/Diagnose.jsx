@@ -6,6 +6,7 @@ import CameraCapture from "../components/CameraCapture";
 import VoiceInput from "../components/VoiceInput";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { Stethoscope, ShieldCheck, Zap } from "lucide-react";
+import { recordDiagnosisId } from './History'
 
 const diagnoseCopy = {
   en: {
@@ -86,6 +87,7 @@ export default function Diagnose({ lang = "ne" }) {
     setError(null);
     try {
       const result = await submitDiagnosis(form);
+      recordDiagnosisId(result.id)
       navigate(`/result/${result.id}`, { state: { diagnosis: result } });
     } catch (err) {
       const msg = err?.response?.data?.detail 
