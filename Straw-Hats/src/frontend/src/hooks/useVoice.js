@@ -11,11 +11,13 @@ export function useVoice(language = 'ne') {
        'webkitSpeechRecognition' in window)
   })
   const recRef = useRef(null)
+  const finalTranscriptRef = useRef('')
 
   const start = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SR) return
 
+    finalTranscriptRef.current = ''
     setTranscript('') // Clear previous session's text
 
     const rec = new SR()
@@ -24,8 +26,23 @@ export function useVoice(language = 'ne') {
     rec.interimResults = true
 
     rec.onresult = (e) => {
-      const text = Array.from(e.results).map(r => r[0].transcript).join('')
-      setTranscript(text)
+      let interimTranscript = ''
+      let newFinalTranscript = ''
+
+      for (let i = e.resultIndex; i < e.results.length; ++i) {
+        const transcriptSegment = e.results[i][0].transcript
+        if (e.results[i].isFinal) {
+          newFinalTranscript += transcriptSegment
+        } else {
+          interimTranscript += transcriptSegment
+        }
+      }
+
+      if (newFinalTranscript) {
+        finalTranscriptRef.current += newFinalTranscript
+      }
+      
+      setTranscript(finalTranscriptRef.current + interimTranscript)
     }
 
     rec.onerror = (e) => {
