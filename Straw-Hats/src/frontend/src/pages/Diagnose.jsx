@@ -123,7 +123,7 @@ export default function Diagnose({ lang = "ne" }) {
                 <ShieldCheck className="w-6 h-6 text-teal-100" />
               </div>
               <div>
-                <h4 className="font-bold text-white">Private & Secure</h4>
+                <h4 className="font-bold text-white">{copy.secure}</h4>
                 <p className="text-sm text-teal-100">{copy.secureSub}</p>
               </div>
             </div>
