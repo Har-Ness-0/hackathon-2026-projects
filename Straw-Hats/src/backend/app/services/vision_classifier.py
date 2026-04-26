@@ -13,7 +13,6 @@ making Animend a genuine dual-model pipeline.
 """
 
 import httpx
-import base64
 from app.config import HF_API_KEY
 
 # ── HF Inference API endpoint ───────────────────────────────────
@@ -61,26 +60,19 @@ async def classify_image(image_bytes: bytes) -> list[dict]:
     if not HF_API_KEY or not HF_API_KEY.startswith("hf_"):
         return []
 
-    image_b64 = base64.b64encode(image_bytes).decode("utf-8")
-
-    payload = {
-        "inputs": {
-            "image": image_b64,
-            "candidate_labels": DISEASE_LABELS,
-        }
-    }
-
     headers = {
         "Authorization": f"Bearer {HF_API_KEY}",
-        "Content-Type": "application/json",
+        "Content-Type": "application/octet-stream",
     }
+    params = {"candidate_labels": ",".join(DISEASE_LABELS)}
 
     try:
         async with httpx.AsyncClient(timeout=20.0) as client:
             response = await client.post(
                 HF_API_URL,
-                json=payload,
+                content=image_bytes,
                 headers=headers,
+                params=params,
             )
 
         if response.status_code == 200:
