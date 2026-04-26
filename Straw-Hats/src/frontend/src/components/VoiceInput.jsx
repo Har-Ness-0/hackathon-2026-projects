@@ -8,12 +8,13 @@ export default function VoiceInput({ language, value, onChange, onSubmit }) {
   const [baseText, setBaseText] = useState("")
 
   // Sync voice transcript to local state
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (transcript && transcript.trim()) {
       const newText = baseText ? `${baseText} ${transcript}`.trim() : transcript
       onChange(newText)
     }
-  }, [transcript, onChange])
+  }, [transcript])
 
   const toggleRecording = () => {
     if (isListening) {
