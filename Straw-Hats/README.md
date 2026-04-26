@@ -139,9 +139,6 @@ ENVIRONMENT=development
 - **Gaurav Dulal** — Backend Development, AI Integration, and API Engineering
 - **Alson Basnet** — Backend for Server-side Architecture
 
-## Demo / Screenshots
-
-*(Insert screenshots of the multi-step form, mobile UI, and the disease outbreak map here)*
 
 ## License
 
