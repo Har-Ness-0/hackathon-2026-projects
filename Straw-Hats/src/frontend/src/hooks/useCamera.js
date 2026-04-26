@@ -7,6 +7,7 @@ export function useCamera() {
   const [error, setError] = useState(null)
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
+  const streamRef = useRef(null)
 
   const startCamera = useCallback(async () => {
     try {
@@ -15,6 +16,7 @@ export function useCamera() {
       }
       const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
       setStream(s)
+      streamRef.current = s
       if (videoRef.current) {
         videoRef.current.srcObject = s
         videoRef.current.play().catch(e => console.error(e))
@@ -36,16 +38,20 @@ export function useCamera() {
       const file = new File([blob], 'capture.jpg', { type: 'image/jpeg' })
       setCapturedImage(file)
       setPreview(URL.createObjectURL(blob))
-      stopCamera()
+      // Stop camera directly via ref to avoid stale closure
+      streamRef.current?.getTracks().forEach(t => t.stop())
+      setStream(null)
+      streamRef.current = null
     }, 'image/jpeg', 0.85)
   }, [])
 
   const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach(t => t.stop())
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop())
       setStream(null)
+      streamRef.current = null
     }
-  }, [stream])
+  }, [])
 
   const reset = () => {
     setCapturedImage(null)
