@@ -11,48 +11,47 @@ export function useVoice(language = 'ne') {
        'webkitSpeechRecognition' in window)
   })
   const recRef = useRef(null)
-  const finalTranscriptRef = useRef('')
+  const accumulatedRef = useRef('')
 
   const start = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SR) return
 
-    finalTranscriptRef.current = ''
-    setTranscript('') // Clear previous session's text
+    setTranscript('') 
+    accumulatedRef.current = ''
 
     const rec = new SR()
     rec.lang = LANG_MAP[language] || 'en-US'
-    rec.continuous = true
+    rec.continuous = false 
     rec.interimResults = true
 
     rec.onresult = (e) => {
-      let interimTranscript = ''
-      let newFinalTranscript = ''
-
-      for (let i = e.resultIndex; i < e.results.length; ++i) {
-        const transcriptSegment = e.results[i][0].transcript
-        if (e.results[i].isFinal) {
-          newFinalTranscript += transcriptSegment
-        } else {
-          interimTranscript += transcriptSegment
-        }
+      const segment = e.results[0][0].transcript
+      if (e.results[0].isFinal) {
+        accumulatedRef.current += segment + ' '
+        setTranscript(accumulatedRef.current)
+      } else {
+        setTranscript(accumulatedRef.current + segment)
       }
-
-      if (newFinalTranscript) {
-        finalTranscriptRef.current += newFinalTranscript
-      }
-      
-      setTranscript(finalTranscriptRef.current + interimTranscript)
     }
 
     rec.onerror = (e) => {
       console.error("Speech recognition error:", e.error)
-      if (e.error === 'not-allowed') {
-        alert("Microphone access was denied. Please check your browser permissions.")
-      }
       setIsListening(false)
     }
-    rec.onend = () => setIsListening(false)
+
+    rec.onend = () => {
+      if (recRef.current && isListening) {
+        try {
+          recRef.current.start()
+        // eslint-disable-next-line no-unused-vars
+        } catch (err) {
+          setIsListening(false)
+        }
+      } else {
+        setIsListening(false)
+      }
+    }
     
     try {
       rec.start()
@@ -61,11 +60,13 @@ export function useVoice(language = 'ne') {
     } catch (err) {
       console.error("Failed to start speech recognition:", err)
     }
-  }, [language])
+  }, [language, isListening])
 
   const stop = useCallback(() => {
-    if (recRef.current) {
-      recRef.current.stop()
+    const rec = recRef.current
+    recRef.current = null 
+    if (rec) {
+      rec.stop()
     }
     setIsListening(false)
   }, [])

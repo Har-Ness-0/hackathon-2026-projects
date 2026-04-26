@@ -10,11 +10,8 @@ export default function VoiceInput({ language, value, onChange, onSubmit }) {
   // Sync voice transcript to local state
   useEffect(() => {
     if (isListening && transcript !== undefined) {
-      const cleanedTranscript = transcript.trim();
-      if (cleanedTranscript) {
-        const combinedText = baseText ? `${baseText} ${cleanedTranscript}` : cleanedTranscript;
-        onChange(combinedText);
-      }
+      const fullText = baseText ? `${baseText} ${transcript}` : transcript;
+      onChange(fullText);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transcript, isListening])
