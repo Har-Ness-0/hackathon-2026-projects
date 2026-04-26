@@ -1,6 +1,5 @@
 import { useTranslation } from '../lib/i18n'
-import { Share2, Map, RefreshCw, Info } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Info } from 'lucide-react'
 
 const SEVERITY_STYLES = {
   low:      { bg: 'bg-green-100',  text: 'text-green-700',  label: 'LOW' },
