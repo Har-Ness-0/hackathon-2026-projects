@@ -17,11 +17,14 @@ export default function OutbreakMap({ highlightId }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let isMounted = true;
     setMounted(true)
     Promise.all([
-      getAllDiagnoses().then(data => setDiagnoses(data || [])),
-      getOutbreaks().then(data => setOutbreaks(data || []))
-    ]).finally(() => setLoading(false))
+      getAllDiagnoses().then(data => { if (isMounted) setDiagnoses(data || []) }),
+      getOutbreaks().then(data => { if (isMounted) setOutbreaks(data || []) })
+    ]).finally(() => { if (isMounted) setLoading(false) })
+
+    return () => { isMounted = false; }
   }, [])
 
   const withCoords = diagnoses.filter(d => d.lat != null && d.lng != null)
