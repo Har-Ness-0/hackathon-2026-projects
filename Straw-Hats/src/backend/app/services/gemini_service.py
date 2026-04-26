@@ -149,7 +149,7 @@ async def get_diagnosis(image_bytes: bytes, animal_type: str,
             response = await loop.run_in_executor(
                 None,
                 lambda: client.models.generate_content(
-                    model="gemini-2.0-flash",
+                    model="gemini-1.5-pro",
                     contents=[
                         types.Content(role="user", parts=[
                             types.Part.from_text(text=SYSTEM_PROMPT),
