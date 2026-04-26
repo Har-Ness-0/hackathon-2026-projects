@@ -4,7 +4,7 @@
 
 ## Problem
 
-84% of all veterinary deep learning research focuses exclusively on dogs and cats, leaving a critical blind spot for the livestock that over 1.3 billion people globally depend on for their food security and income. Livestock diseases cause over $300 billion in annual losses in developing nations. For farmers in countries like Nepal, Bangladesh, and across sub-Saharan Africa, the nearest veterinarian is often over 50 kilometers away. By the time help arrives, an animal may die—costing a family months of income. Furthermore, rural farming zones are common origin points for unmonitored zoonotic diseases (diseases that jump from animals to humans).
+84% of all veterinary deep learning research focuses exclusively on dogs and cats, leaving a critical blind spot for the livestock that over 1.3 billion people globally depend on for their food security and income. Livestock diseases cause over $300 billion in annual losses in developing nations. For farmers in countries like Nepal, Bangladesh, and across sub-Saharan Africa, the nearest veterinarian is often over 50 kilometers away. By the time help arrives, an animal may die, costing a family months of income. Furthermore, rural farming zones are common origin points for unmonitored zoonotic diseases (diseases that jump from animals to humans).
 
 ## Our Approach
 
