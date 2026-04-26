@@ -14,15 +14,17 @@ export default function OutbreakMap({ highlightId }) {
   const [diagnoses, setDiagnoses] = useState([])
   const [outbreaks, setOutbreaks] = useState([])
   const [mounted, setMounted] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setMounted(true)
-    // Fetch diagnoses from real API
-    getAllDiagnoses().then(data => setDiagnoses(data || []))
-    getOutbreaks().then(data => setOutbreaks(data || []))
+    Promise.all([
+      getAllDiagnoses().then(data => setDiagnoses(data || [])),
+      getOutbreaks().then(data => setOutbreaks(data || []))
+    ]).finally(() => setLoading(false))
   }, [])
 
-  const withCoords = diagnoses.filter(d => d.lat && d.lng)
+  const withCoords = diagnoses.filter(d => d.lat != null && d.lng != null)
 
   if (!mounted) return null
 
@@ -40,6 +42,19 @@ export default function OutbreakMap({ highlightId }) {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {loading && (
+        <div className="absolute inset-0 z-[500] flex items-center 
+                        justify-center bg-white/70 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-10 w-10 
+                            border-b-2 border-teal-500"></div>
+            <p className="text-slate-600 font-medium text-sm">
+              Loading outbreak data...
+            </p>
+          </div>
         </div>
       )}
 
@@ -84,6 +99,39 @@ export default function OutbreakMap({ highlightId }) {
           </CircleMarker>
         ))}
       </MapContainer>
+
+      <div className="absolute bottom-6 left-4 z-[400] bg-white 
+                      rounded-2xl shadow-lg border border-slate-100 
+                      p-4 min-w-[160px]">
+        <p className="text-xs font-bold text-slate-500 uppercase 
+                      tracking-wider mb-3">
+          Severity
+        </p>
+        <div className="space-y-2">
+          {[
+            { color: '#16A34A', label: 'Low' },
+            { color: '#D97706', label: 'Medium' },
+            { color: '#EA580C', label: 'High' },
+            { color: '#DC2626', label: 'Critical' },
+          ].map(({ color, label }) => (
+            <div key={label} className="flex items-center gap-2.5">
+              <div 
+                className="w-3.5 h-3.5 rounded-full flex-shrink-0 
+                           border-2 border-white shadow-sm"
+                style={{ backgroundColor: color }}
+              />
+              <span className="text-sm font-medium text-slate-700">
+                {label}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 pt-3 border-t border-slate-100">
+          <p className="text-xs text-slate-400 font-medium">
+            {diagnoses.filter(d => d.lat && d.lng).length} cases mapped
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
