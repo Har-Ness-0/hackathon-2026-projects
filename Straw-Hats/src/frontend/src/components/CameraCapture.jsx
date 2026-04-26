@@ -1,12 +1,14 @@
 import { useCamera } from '../hooks/useCamera'
 import { Camera, Image as ImageIcon, RefreshCw } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 export default function CameraCapture({ onCapture }) {
   const { videoRef, canvasRef, capturedImage, preview, error, startCamera, capture, reset, stream } = useCamera()
+  const firedRef = useRef(false)
 
   useEffect(() => {
-    if (capturedImage && preview) {
+    if (capturedImage && preview && !firedRef.current) {
+      firedRef.current = true
       onCapture(capturedImage, preview)
     }
   }, [capturedImage, preview])
@@ -14,6 +16,7 @@ export default function CameraCapture({ onCapture }) {
   function handleFileUpload(e) {
     const file = e.target.files[0]
     if (!file) return
+    firedRef.current = true
     onCapture(file, URL.createObjectURL(file))
   }
 
@@ -25,7 +28,7 @@ export default function CameraCapture({ onCapture }) {
           <img src={preview} className="w-full h-auto object-cover aspect-4/3" alt="Captured" />
         </div>
         <button 
-          onClick={reset} 
+          onClick={() => { firedRef.current = false; reset() }} 
           className="flex items-center gap-2 text-slate-500 font-medium hover:text-slate-700 transition-colors py-2 px-4 rounded-full hover:bg-slate-100"
         >
           <RefreshCw className="w-5 h-5" />
