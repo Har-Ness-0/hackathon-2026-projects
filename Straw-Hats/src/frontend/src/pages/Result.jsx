@@ -30,7 +30,7 @@ export default function Result() {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: 'VetLens Diagnosis',
+        title: 'Animend Diagnosis',
         text: `My animal was diagnosed with ${diagnosis?.disease}.`,
         url: window.location.href,
       })
@@ -79,7 +79,7 @@ export default function Result() {
           
           {/* Main Card */}
           <div className="w-full lg:w-2/3">
-            <DiagnosisCard diagnosis={diagnosis} />
+            <DiagnosisCard diagnosis={diagnosis} language={diagnosis?.language || 'en'} />
           </div>
 
           {/* Action Sidebar */}
@@ -101,7 +101,7 @@ export default function Result() {
                 </button>
                 
                 <Link 
-                  to="/map"
+                  to={`/map?highlight=${diagnosis?.id || ''}`}
                   className="w-full flex items-center justify-between p-4 rounded-2xl bg-teal-50 border-2 border-transparent hover:border-teal-200 text-teal-800 font-bold transition-all group"
                 >
                   <span className="flex items-center gap-3">
