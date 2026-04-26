@@ -29,7 +29,7 @@ def process_image(file_bytes: bytes) -> bytes:
         raise ValueError("Invalid image file format")
 
     # Convert modes that JPEG can't handle
-    if img.mode in ("RGBA", "P"):
+    if img.mode not in ("RGB", "L"):
         img = img.convert("RGB")
 
     # Resize maintaining aspect ratio (never upscales)
