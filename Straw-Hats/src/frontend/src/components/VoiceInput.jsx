@@ -13,7 +13,7 @@ export default function VoiceInput({ language, value, onChange, onSubmit }) {
       const newText = baseText ? `${baseText} ${transcript}`.trim() : transcript
       onChange(newText)
     }
-  }, [transcript])
+  }, [transcript, onChange])
 
   const toggleRecording = () => {
     if (isListening) {
