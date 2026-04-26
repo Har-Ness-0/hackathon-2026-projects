@@ -5,17 +5,23 @@ import { useState, useEffect } from 'react'
 export default function VoiceInput({ language, value, onChange, onSubmit }) {
   const { transcript, isListening, start, stop, supported } = useVoice(language)
   const [isTypingMode, setIsTypingMode] = useState(false)
+  const [baseText, setBaseText] = useState("")
 
   // Sync voice transcript to local state
   useEffect(() => {
     if (transcript && transcript.trim()) {
-      onChange(transcript)
+      const newText = baseText ? `${baseText} ${transcript}`.trim() : transcript
+      onChange(newText)
     }
   }, [transcript])
 
   const toggleRecording = () => {
-    if (isListening) stop()
-    else start()
+    if (isListening) {
+      stop()
+    } else {
+      setBaseText(value)
+      start()
+    }
   }
 
   return (
@@ -31,6 +37,7 @@ export default function VoiceInput({ language, value, onChange, onSubmit }) {
       {supported && !isTypingMode && (
         <div className="flex flex-col items-center gap-6 py-4">
           <button
+            type="button"
             onClick={toggleRecording}
             className={`relative flex items-center justify-center w-32 h-32 rounded-full transition-all duration-300 shadow-xl ${
               isListening 
@@ -69,6 +76,7 @@ export default function VoiceInput({ language, value, onChange, onSubmit }) {
       <div className="flex gap-4">
         {supported && (
           <button 
+            type="button"
             onClick={() => setIsTypingMode(!isTypingMode)}
             className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors font-medium"
           >
@@ -76,6 +84,7 @@ export default function VoiceInput({ language, value, onChange, onSubmit }) {
           </button>
         )}
         <button
+          type="button"
           onClick={() => { stop(); onSubmit() }}
           disabled={!value.trim()}
           className="flex-1 flex items-center justify-center gap-2 bg-teal-600 text-white p-4 rounded-2xl font-bold text-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg"
