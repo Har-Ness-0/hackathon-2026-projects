@@ -6,7 +6,7 @@ import CameraCapture from "../components/CameraCapture";
 import VoiceInput from "../components/VoiceInput";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { Stethoscope, ShieldCheck, Zap } from "lucide-react";
-import { recordDiagnosisId } from './History'
+import { recordDiagnosisId } from '../utils/history'
 
 const diagnoseCopy = {
   en: {
@@ -58,35 +58,37 @@ export default function Diagnose({ lang = "ne" }) {
     animalType: null,
     image: null,
     symptoms: "",
-    language: lang,
     lat: null,
     lng: null,
   });
 
-  useEffect(() => {
-    setForm((f) => ({ ...f, language: lang }));
-  }, [lang]);
-
   // Get GPS on mount silently
   useEffect(() => {
+    let isMounted = true;
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) =>
-          setForm((f) => ({
-            ...f,
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-          })),
+        (pos) => {
+          if (isMounted) {
+            setForm((f) => ({
+              ...f,
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+            }));
+          }
+        },
         () => {},
       );
     }
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   async function handleSubmit() {
     setLoading(true);
     setError(null);
     try {
-      const result = await submitDiagnosis(form);
+      const result = await submitDiagnosis({ ...form, language: lang });
       recordDiagnosisId(result.id)
       navigate(`/result/${result.id}`, { state: { diagnosis: result } });
     } catch (err) {
@@ -176,7 +178,7 @@ export default function Diagnose({ lang = "ne" }) {
             {step === 2 && (
               <div className="animate-in fade-in duration-500">
                 <CameraCapture
-                  onCapture={(file, _previewUrl) => {
+                  onCapture={(file) => {
                     setForm((f) => ({ ...f, image: file }));
                   }}
                 />
