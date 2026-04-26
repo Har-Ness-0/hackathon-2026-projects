@@ -106,7 +106,7 @@ async def diagnose(
         logging.error(f"Gemini unavailable: {e}", exc_info=True)
         raise HTTPException(
             status_code=503, 
-            detail="The AI Diagnostic Service is currently offline. Please try again later."
+            detail=str(e)
         )
 
     # 4. Build the full record

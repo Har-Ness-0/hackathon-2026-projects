@@ -140,66 +140,69 @@ async def get_diagnosis(image_bytes: bytes, animal_type: str,
         "Vision classifier: not available for this request.",
     )
 
-    for attempt in range(3):
-        try:
-            logging.info(f"[Gemini] Sending request for animal_type={animal_type}")
+    models_to_try = [
+        "gemini-flash-latest", 
+        "gemini-2.0-flash", 
+        "gemini-3-flash-preview",
+        "gemini-flash-lite-latest"
+    ]
+    last_error = None
 
-            # Use run_in_executor to avoid blocking the async event loop
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: client.models.generate_content(
-                    model="gemini-1.5-pro",
-                    contents=[
-                        types.Content(role="user", parts=[
-                            types.Part.from_text(text=SYSTEM_PROMPT),
-                            types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
-                            types.Part.from_text(text=prompt),
-                        ])
-                    ],
-                    config=types.GenerateContentConfig(
-                        temperature=0.2, 
-                        max_output_tokens=500
+    for model_name in models_to_try:
+        for attempt in range(2):
+            try:
+                logging.info(f"[Gemini] Trying model={model_name} (Attempt {attempt+1})")
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: client.models.generate_content(
+                        model=model_name,
+                        config=types.GenerateContentConfig(
+                            system_instruction=SYSTEM_PROMPT,
+                            temperature=0.2, 
+                            max_output_tokens=1000
+                        ),
+                        contents=[
+                            types.Content(role="user", parts=[
+                                types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+                                types.Part.from_text(text=prompt),
+                            ])
+                        ]
                     )
                 )
-            )
 
-            raw = response.text.strip()
-            logging.info(f"[Gemini] Response received, length={len(raw)}")
+                raw = response.text.strip()
+                if not raw: continue
+                
+                # Strip markdown
+                raw = re.sub(r"```json|```", "", raw).strip()
+                result = json.loads(raw)
 
-            if not raw:
-                raise AIServiceError("Empty response from Gemini.")
+                # Standardize
+                result["confidence"] = max(0, min(100, int(result.get("confidence", 50))))
+                result["severity"] = str(result.get("severity", "medium")).lower()
+                if result["severity"] not in ("low", "medium", "high", "critical"):
+                    result["severity"] = "medium"
+                result["vet_required"] = bool(result.get("vet_required", False))
+                result["zoonotic_risk"] = bool(result.get("zoonotic_risk", False))
 
-            # Strip any markdown code fences Gemini might add
-            raw = re.sub(r"```json|```", "", raw).strip()
+                return _validate_result(result)
 
-            result = json.loads(raw)
+            except Exception as e:
+                last_error = e
+                error_msg = str(e)
+                logging.warning(f"[Gemini] {model_name} failed: {error_msg}")
+                
+                is_retryable = "429" in error_msg or "500" in error_msg or "503" in error_msg or "ResourceExhausted" in type(e).__name__
+                if is_retryable:
+                    if attempt < 1:
+                        await asyncio.sleep(2)
+                        continue
+                    else:
+                        break # Try next model
+                break # Fatal error, stop entirely
 
-            # Clamp confidence to valid range
-            result["confidence"] = max(
-                0, min(100, int(result.get("confidence", 50))))
-
-            # Normalise severity to lowercase
-            result["severity"] = str(result.get("severity", "medium")).lower()
-            if result["severity"] not in ("low", "medium", "high", "critical"):
-                result["severity"] = "medium"
-
-            # Ensure boolean fields
-            result["vet_required"] = bool(result.get("vet_required", False))
-            result["zoonotic_risk"] = bool(result.get("zoonotic_risk", False))
-
-            result = _validate_result(result)
-
-            return result
-
-        except json.JSONDecodeError as e:
-            if attempt == 2:
-                logging.error(f"[Gemini Error] JSONDecodeError: {e}", exc_info=True)
-                raise AIServiceError(f"Gemini returned invalid JSON: {e}")
-        except Exception as e:
-            logging.error(f"[Gemini Error] Type: {type(e).__name__}, Message: {e}", exc_info=True)
-            if "429" in str(e) or "ResourceExhausted" in str(type(e).__name__):
-                raise AIServiceError(
-                    "Too many requests — please wait a moment. (Demo rate limit)")
-            if attempt == 2:
-                raise AIServiceError(f"Gemini API call failed: {e}")
+    # Final failure
+    if "429" in str(last_error) or "ResourceExhausted" in type(last_error).__name__:
+        raise AIServiceError("The AI Diagnostic Service is under extreme heavy load. Please try again in 30 seconds.")
+    raise AIServiceError(f"Gemini API call failed: {last_error}")

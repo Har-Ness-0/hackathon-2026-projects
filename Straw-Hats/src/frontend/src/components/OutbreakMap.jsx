@@ -14,7 +14,7 @@ export default function OutbreakMap({ highlightId }) {
   const [diagnoses, setDiagnoses] = useState([])
   const [outbreaks, setOutbreaks] = useState([])
 
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true) 
 
   useEffect(() => {
     let isMounted = true;
