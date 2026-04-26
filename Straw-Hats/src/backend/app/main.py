@@ -26,6 +26,7 @@ app.add_middleware(
     allow_origins=[
         "https://animend.vercel.app",   # Production frontend
         "http://localhost:5173",         # Vite dev server
+        "http://127.0.0.1:5173",         # Vite dev server (127.0.0.1)
         "http://localhost:3000",         # Fallback dev port
     ],
     allow_methods=["*"],
