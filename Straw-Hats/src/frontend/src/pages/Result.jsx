@@ -24,7 +24,7 @@ export default function Result() {
           }
           setLoading(false)
         })
-        .catch(err => {
+        .catch(() => {
           setError('Could not load diagnosis result.')
           setLoading(false)
         })
