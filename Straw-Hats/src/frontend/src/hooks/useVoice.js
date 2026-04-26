@@ -16,6 +16,8 @@ export function useVoice(language = 'ne') {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SR) return
 
+    setTranscript('') // Clear previous session's text
+
     const rec = new SR()
     rec.lang = LANG_MAP[language] || 'en-US'
     rec.continuous = true
@@ -34,9 +36,14 @@ export function useVoice(language = 'ne') {
       setIsListening(false)
     }
     rec.onend = () => setIsListening(false)
-    rec.start()
-    recRef.current = rec
-    setIsListening(true)
+    
+    try {
+      rec.start()
+      recRef.current = rec
+      setIsListening(true)
+    } catch (err) {
+      console.error("Failed to start speech recognition:", err)
+    }
   }, [language])
 
   const stop = useCallback(() => {
@@ -46,12 +53,13 @@ export function useVoice(language = 'ne') {
     setIsListening(false)
   }, [])
 
-  // Stop recording when language changes so next tap uses correct language
+  // Stop recording ONLY when language changes so next tap uses correct language
   useEffect(() => {
     if (isListening) {
       setTimeout(() => stop(), 0)
     }
-  }, [language, isListening, stop])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language])
 
   return { transcript, setTranscript, isListening, supported, start, stop }
 }

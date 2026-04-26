@@ -17,8 +17,8 @@ export default function Result() {
     if (!diagnosis) {
       getDiagnosis(id)
         .then(data => {
-          if (!data || data.not_found) {
-            setError('Diagnosis not found.')
+          if (!data || data.not_found || (data.disease && data.disease.includes('AI unavailable'))) {
+            setError('Diagnosis not found or AI was unavailable.')
           } else {
             setDiagnosis(data)
           }

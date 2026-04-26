@@ -89,6 +89,11 @@ export default function Diagnose({ lang = "ne" }) {
     setError(null);
     try {
       const result = await submitDiagnosis({ ...form, language: lang });
+      
+      if (!result || !result.disease || result.disease.includes("AI unavailable")) {
+        throw new Error("The AI Diagnostic Service is currently offline. Please try again later.");
+      }
+      
       recordDiagnosisId(result.id)
       navigate(`/result/${result.id}`, { state: { diagnosis: result } });
     } catch (err) {
