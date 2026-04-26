@@ -17,18 +17,6 @@ const SEVERITY_COLORS = {
   critical: 'bg-red-100 text-red-700',
 }
 
-export function recordDiagnosisId(id) {
-  const existing = JSON.parse(
-    sessionStorage.getItem('animend_session_ids') || '[]'
-  )
-  if (!existing.includes(id)) {
-    sessionStorage.setItem(
-      'animend_session_ids',
-      JSON.stringify([...existing, id])
-    )
-  }
-}
-
 export default function History() {
   const [allDiagnoses, setAllDiagnoses] = useState([])
   const [loading,   setLoading]   = useState(true)
