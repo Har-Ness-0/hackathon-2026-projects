@@ -13,6 +13,7 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from typing import Optional
 import uuid
 from datetime import datetime
+import logging
 
 from app.services.gemini_service import get_diagnosis, AIServiceError
 from app.services.image_service import process_image
@@ -81,7 +82,7 @@ async def diagnose(
         )
         photo_url = db.storage.from_("animal-photos").get_public_url(photo_path)
     except Exception as e:
-        print(f"[Storage] Upload failed (non-fatal): {e}")
+        logging.warning(f"[Storage] Upload failed (non-fatal): {e}", exc_info=True)
         photo_url = ""
 
     # 2.5. Run HF Vision Classifier (parallel AI signal for Gemini)
@@ -89,10 +90,10 @@ async def diagnose(
     try:
         hf_predictions = await classify_image(processed_bytes)
         vision_context = format_predictions_for_gemini(hf_predictions)
-        print(f"[HF Vision] Top prediction: "
+        logging.info(f"[HF Vision] Top prediction: "
               f"{hf_predictions[0]['label'] if hf_predictions else 'none'}")
     except Exception as e:
-        print(f"[HF Vision] Classifier failed gracefully: {e}")
+        logging.warning(f"[HF Vision] Classifier failed gracefully: {e}", exc_info=True)
         hf_predictions = []
         vision_context = "Vision classifier: unavailable."
 
@@ -102,25 +103,11 @@ async def diagnose(
             processed_bytes, animal_type, symptoms, vision_context
         )
     except AIServiceError as e:
-        print(f"Gemini unavailable, using safe fallback diagnosis: {e}")
-        ai_result = {
-            "disease": "Undetermined Condition (AI unavailable)",
-            "confidence": 35,
-            "severity": "medium",
-            "description": (
-                "The AI service is currently unavailable. This is a temporary "
-                "fallback result and should not be used as a final diagnosis."
-            ),
-            "immediate_action": (
-                "Isolate the animal, provide clean water and shade, and contact "
-                "a veterinarian as soon as possible."
-            ),
-            "treatment": "Supportive care only until a veterinarian evaluates the animal.",
-            "prevention": "Maintain hygiene, isolate symptomatic animals, and monitor the herd.",
-            "vet_required": True,
-            "zoonotic_risk": False,
-            "vision_model_agreement": None,
-        }
+        logging.error(f"Gemini unavailable: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=503, 
+            detail="The AI Diagnostic Service is currently offline. Please try again later."
+        )
 
     # 4. Build the full record
     record = {
@@ -150,7 +137,7 @@ async def diagnose(
     try:
         db.table("diagnoses").insert(record).execute()
     except Exception as e:
-        print(f"[DB] Insert failed (non-fatal): {e}")
+        logging.error(f"[DB] Insert failed (non-fatal): {e}", exc_info=True)
         # Continue — farmer still gets their diagnosis result
 
     # 6. Return response
@@ -171,7 +158,7 @@ async def get_all_diagnoses():
         )
         return result.data or []
     except Exception as e:
-        print(f"Supabase query failed: {e}")
+        logging.error(f"Supabase query failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Database query failed")
 
 
@@ -199,5 +186,5 @@ async def get_diagnosis_by_id(diagnosis_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Supabase query failed: {e}")
+        logging.error(f"Supabase query failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Database query failed")
