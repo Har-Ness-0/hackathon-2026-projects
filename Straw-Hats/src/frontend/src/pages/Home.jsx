@@ -23,10 +23,10 @@ export default function Home({ lang = "ne" }) {
 
         <div className="flex justify-center gap-2 flex-wrap mb-6">
           <span className="bg-teal-100 text-teal-800 text-xs font-semibold px-3 py-1 rounded-full">
-            🏥 Population Health Intelligence
+            AI for farmers
           </span>
           <span className="bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1 rounded-full">
-            🤖 AI Patient Triage
+            🤖 AI-Powered health coordination
           </span>
         </div>
         <p className="text-xl text-slate-500 mb-10 max-w-2xl mx-auto">
