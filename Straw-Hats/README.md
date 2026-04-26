@@ -97,22 +97,8 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-### Environment Variables
 
-**Frontend (`frontend/.env.local`)**:
-```env
-VITE_API_URL=http://localhost:8000
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_anon_key
-```
 
-**Backend (`backend/.env`)**:
-```env
-GEMINI_API_KEY=your_gemini_api_key
-SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_KEY=your_service_key
-ENVIRONMENT=development
-```
 
 ## Tech Stack
 
