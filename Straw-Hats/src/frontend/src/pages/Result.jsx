@@ -17,7 +17,11 @@ export default function Result() {
     if (!diagnosis) {
       getDiagnosis(id)
         .then(data => {
-          setDiagnosis(data)
+          if (!data || data.not_found) {
+            setError('Diagnosis not found.')
+          } else {
+            setDiagnosis(data)
+          }
           setLoading(false)
         })
         .catch(err => {
