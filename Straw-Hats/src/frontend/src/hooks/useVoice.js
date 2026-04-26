@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 
 const LANG_MAP = { en: 'en-US', ne: 'ne-NP', hi: 'hi-IN' }
 
@@ -45,6 +45,13 @@ export function useVoice(language = 'ne') {
     }
     setIsListening(false)
   }, [])
+
+  // Stop recording when language changes so next tap uses correct language
+  useEffect(() => {
+    if (isListening) {
+      stop()
+    }
+  }, [language])
 
   return { transcript, setTranscript, isListening, supported, start, stop }
 }
