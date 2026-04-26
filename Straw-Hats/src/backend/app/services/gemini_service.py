@@ -7,7 +7,9 @@ always return valid JSON — no hallucinated free text.
 """
 
 import asyncio
-import google.generativeai as genai
+import logging
+from google import genai
+from google.genai import types
 import json
 import re
 
@@ -15,9 +17,8 @@ from app.config import GEMINI_API_KEY
 
 # ── Configure Gemini at module level ────────────────────────────
 
-print(f"[GEMINI] Key loaded: {GEMINI_API_KEY[:8] if GEMINI_API_KEY else 'MISSING'}")
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+logging.info(f"[GEMINI] Key loaded: {GEMINI_API_KEY[:8] if GEMINI_API_KEY else 'MISSING'}")
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 # ── Custom exception ────────────────────────────────────────────
@@ -141,26 +142,30 @@ async def get_diagnosis(image_bytes: bytes, animal_type: str,
 
     for attempt in range(3):
         try:
-            print(f"[Gemini] Sending request for animal_type={animal_type}")
+            logging.info(f"[Gemini] Sending request for animal_type={animal_type}")
 
             # Use run_in_executor to avoid blocking the async event loop
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(
                 None,
-                lambda: model.generate_content(
+                lambda: client.models.generate_content(
+                    model="gemini-2.0-flash",
                     contents=[
-                        {"role": "user", "parts": [
-                            {"text": SYSTEM_PROMPT},
-                            {"inline_data": {"mime_type": "image/jpeg", "data": image_bytes}},
-                            {"text": prompt},
-                        ]}
+                        types.Content(role="user", parts=[
+                            types.Part.from_text(text=SYSTEM_PROMPT),
+                            types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+                            types.Part.from_text(text=prompt),
+                        ])
                     ],
-                    generation_config={"temperature": 0.2, "max_output_tokens": 500},
+                    config=types.GenerateContentConfig(
+                        temperature=0.2, 
+                        max_output_tokens=500
+                    )
                 )
             )
 
             raw = response.text.strip()
-            print(f"[Gemini] Response received, length={len(raw)}")
+            logging.info(f"[Gemini] Response received, length={len(raw)}")
 
             if not raw:
                 raise AIServiceError("Empty response from Gemini.")
@@ -189,9 +194,10 @@ async def get_diagnosis(image_bytes: bytes, animal_type: str,
 
         except json.JSONDecodeError as e:
             if attempt == 2:
+                logging.error(f"[Gemini Error] JSONDecodeError: {e}", exc_info=True)
                 raise AIServiceError(f"Gemini returned invalid JSON: {e}")
         except Exception as e:
-            print(f"[Gemini Error] Type: {type(e).__name__}, Message: {e}")
+            logging.error(f"[Gemini Error] Type: {type(e).__name__}, Message: {e}", exc_info=True)
             if "429" in str(e) or "ResourceExhausted" in str(type(e).__name__):
                 raise AIServiceError(
                     "Too many requests — please wait a moment. (Demo rate limit)")
