@@ -26,7 +26,7 @@ export default function Home({ lang = "ne" }) {
             AI for farmers
           </span>
           <span className="bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1 rounded-full">
-            🤖 AI-Powered health coordination
+           AI-Powered Health Coordination
           </span>
         </div>
         <p className="text-xl text-slate-500 mb-10 max-w-2xl mx-auto">
