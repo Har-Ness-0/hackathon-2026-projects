@@ -49,9 +49,9 @@ export function useVoice(language = 'ne') {
   // Stop recording when language changes so next tap uses correct language
   useEffect(() => {
     if (isListening) {
-      stop()
+      setTimeout(() => stop(), 0)
     }
-  }, [language])
+  }, [language, isListening, stop])
 
   return { transcript, setTranscript, isListening, supported, start, stop }
 }

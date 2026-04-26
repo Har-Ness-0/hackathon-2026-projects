@@ -13,12 +13,11 @@ const SEVERITY_COLORS = {
 export default function OutbreakMap({ highlightId }) {
   const [diagnoses, setDiagnoses] = useState([])
   const [outbreaks, setOutbreaks] = useState([])
-  const [mounted, setMounted] = useState(false)
+
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let isMounted = true;
-    setMounted(true)
     Promise.all([
       getAllDiagnoses().then(data => { if (isMounted) setDiagnoses(data || []) }),
       getOutbreaks().then(data => { if (isMounted) setOutbreaks(data || []) })
@@ -29,7 +28,7 @@ export default function OutbreakMap({ highlightId }) {
 
   const withCoords = diagnoses.filter(d => d.lat != null && d.lng != null)
 
-  if (!mounted) return null
+
 
   return (
     <div className="relative w-full h-[calc(100vh-64px)]">
