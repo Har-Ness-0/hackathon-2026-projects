@@ -30,23 +30,23 @@ export function recordDiagnosisId(id) {
 }
 
 export default function History() {
-  const [history,   setHistory]   = useState([])
+  const [allDiagnoses, setAllDiagnoses] = useState([])
   const [loading,   setLoading]   = useState(true)
   const [showAll,   setShowAll]   = useState(false)
 
   useEffect(() => {
     getAllDiagnoses().then(data => {
-      const all = data || []
-      const sessionIds = JSON.parse(
-        sessionStorage.getItem('animend_session_ids') || '[]'
-      )
-      const mine = sessionIds.length > 0
-        ? all.filter(d => sessionIds.includes(d.id))
-        : all
-      setHistory(showAll ? all : mine)
+      setAllDiagnoses(data || [])
       setLoading(false)
     })
-  }, [showAll])
+  }, [])
+
+  const sessionIds = JSON.parse(
+    sessionStorage.getItem('animend_session_ids') || '[]'
+  )
+  const history = showAll
+    ? allDiagnoses
+    : allDiagnoses.filter(d => sessionIds.includes(d.id))
 
   if (loading) {
     return (
