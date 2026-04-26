@@ -9,8 +9,8 @@ const SEVERITY_STYLES = {
   critical: { bg: 'bg-red-100',    text: 'text-red-700',    label: 'CRITICAL' },
 }
 
-export default function DiagnosisCard({ diagnosis }) {
-  const t = useTranslation('en')
+export default function DiagnosisCard({ diagnosis, language = 'en' }) {
+  const t = useTranslation(language)
 
   // Null-safe — never crash if diagnosis has missing fields
   if (!diagnosis) return null
@@ -34,9 +34,18 @@ export default function DiagnosisCard({ diagnosis }) {
         {/* Severity Banner */}
         <div className={`${s.bg} ${s.text} px-6 py-4 flex items-center justify-between`}>
           <span className="font-extrabold text-lg tracking-wide">{s.label} SEVERITY</span>
-          <span className="bg-white/50 px-3 py-1 rounded-full text-sm font-bold shadow-sm">
-            {diagnosis.confidence ?? 0}% Confident
-          </span>
+          <div className="flex flex-col items-end gap-1">
+            <span className="text-sm font-bold">
+              {diagnosis.confidence ?? 0}% Confidence
+            </span>
+            <div className="w-24 h-2 bg-white/30 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-white rounded-full transition-all 
+                           duration-1000 ease-out"
+                style={{ width: `${diagnosis.confidence ?? 0}%` }}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="p-6 space-y-6">
@@ -111,6 +120,26 @@ export default function DiagnosisCard({ diagnosis }) {
                   ⚠️ RISK TO HUMANS
                 </span>
               )}
+            </div>
+          )}
+
+          {/* Vision Model Agreement Badge */}
+          {diagnosis.vision_model_agreement !== null && 
+           diagnosis.vision_model_agreement !== undefined && (
+            <div className={`flex items-center gap-2.5 p-3 rounded-xl 
+                             text-sm font-medium border ${
+              diagnosis.vision_model_agreement
+                ? 'bg-teal-50 border-teal-100 text-teal-700'
+                : 'bg-amber-50 border-amber-100 text-amber-700'
+            }`}>
+              <span className="text-base flex-shrink-0">
+                {diagnosis.vision_model_agreement ? '✓' : '⚡'}
+              </span>
+              <span>
+                {diagnosis.vision_model_agreement
+                  ? 'Vision model and AI reasoning are in agreement'
+                  : 'AI reasoning overrode the visual classifier — symptom description weighted higher'}
+              </span>
             </div>
           )}
 
