@@ -11,31 +11,47 @@ export function useVoice(language = 'ne') {
        'webkitSpeechRecognition' in window)
   })
   const recRef = useRef(null)
+  const accumulatedRef = useRef('')
 
   const start = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SR) return
 
-    setTranscript('') // Clear previous session's text
+    setTranscript('') 
+    accumulatedRef.current = ''
 
     const rec = new SR()
     rec.lang = LANG_MAP[language] || 'en-US'
-    rec.continuous = true
+    rec.continuous = false 
     rec.interimResults = true
 
     rec.onresult = (e) => {
-      const text = Array.from(e.results).map(r => r[0].transcript).join('')
-      setTranscript(text)
+      const segment = e.results[0][0].transcript
+      if (e.results[0].isFinal) {
+        accumulatedRef.current += segment + ' '
+        setTranscript(accumulatedRef.current)
+      } else {
+        setTranscript(accumulatedRef.current + segment)
+      }
     }
 
     rec.onerror = (e) => {
       console.error("Speech recognition error:", e.error)
-      if (e.error === 'not-allowed') {
-        alert("Microphone access was denied. Please check your browser permissions.")
-      }
       setIsListening(false)
     }
-    rec.onend = () => setIsListening(false)
+
+    rec.onend = () => {
+      if (recRef.current && isListening) {
+        try {
+          recRef.current.start()
+        // eslint-disable-next-line no-unused-vars
+        } catch (err) {
+          setIsListening(false)
+        }
+      } else {
+        setIsListening(false)
+      }
+    }
     
     try {
       rec.start()
@@ -44,11 +60,13 @@ export function useVoice(language = 'ne') {
     } catch (err) {
       console.error("Failed to start speech recognition:", err)
     }
-  }, [language])
+  }, [language, isListening])
 
   const stop = useCallback(() => {
-    if (recRef.current) {
-      recRef.current.stop()
+    const rec = recRef.current
+    recRef.current = null 
+    if (rec) {
+      rec.stop()
     }
     setIsListening(false)
   }, [])
